@@ -3,6 +3,7 @@
 from os import urandom, getpid
 from time import time
 from struct import pack
+from io import BytesIO
 
 class DocId(bytes):
     """Document Id class"""
@@ -19,12 +20,13 @@ class DocId(bytes):
             else:
                 raise TypeError("Argument is not 'bytes' object")
         else:
-            # 1. 2 bytes random
-            rand = urandom(2)
-            # 2. 4 bytes represents Unix time
-            unix_time = pack('I', int(time()))
-            # 3. 2 bytes for PID
-            pid = pack('H', getpid())
-            id_bytes = rand + unix_time + pid
+            with BytesIO() as buffer:
+                # 1. 2 bytes random
+                buffer.write(urandom(2))
+                # 2. 4 bytes represents Unix time
+                buffer.write(pack('I', int(time())))
+                # 3. 2 bytes for PID
+                buffer.write(pack('H', getpid()))
+                id_bytes = buffer.getvalue()
         
         return bytes.__new__(cls, id_bytes, **kargs)
