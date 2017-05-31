@@ -2,9 +2,10 @@
 
 __version__ = '0.9.0'
 __all__ = [
-    'DocId'
+    'DocId', 'NorimDb'
 ]
 
 __author__ = 'Miron Jakubowski <mijakubowski@gmail.com>'
 
 from .docid import DocId
+from .db import NorimDb

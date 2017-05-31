@@ -5,6 +5,7 @@ from time import time
 from struct import pack
 from io import BytesIO
 
+
 class DocId(bytes):
     """Document Id class"""
     

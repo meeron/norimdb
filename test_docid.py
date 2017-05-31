@@ -4,6 +4,7 @@ import pytest
 
 from norimdb import DocId
 
+
 class TestDocId:
     """DocId tests"""
 
