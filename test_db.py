@@ -4,7 +4,7 @@ import pytest
 from tempfile import TemporaryDirectory
 from os import path
 
-from norimdb import NorimDb
+from norimdb import NorimDb, InvalidDbError
 
 
 class TestNorimDb:
@@ -18,5 +18,5 @@ class TestNorimDb:
             assert path.isfile(path.join(tempdir, 'data.ndb'))
 
     def test_open_fail(self):
-        with pytest.raises(NotADirectoryError) as err:
+        with pytest.raises(InvalidDbError) as err:
             NorimDb("/test/test")

@@ -2,10 +2,12 @@
 
 __version__ = '0.9.0'
 __all__ = [
-    'DocId', 'NorimDb'
+    'DocId', 'NorimDb',
+    'InvalidDbError'
 ]
 
 __author__ = 'Miron Jakubowski <mijakubowski@gmail.com>'
 
 from .docid import DocId
 from .db import NorimDb
+from .exceptions import InvalidDbError

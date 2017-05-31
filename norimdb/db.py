@@ -2,13 +2,15 @@
 
 from os import path
 
+from .exceptions import InvalidDbError
+
 
 class NorimDb:
     """NorimDb class"""
 
     def __init__(self, dir_path):
         if not path.isdir(dir_path):
-            raise NotADirectoryError("Path '{}' does not exists or not directory.")
+            raise InvalidDbError("Path '{}' does not exists or not directory.")
 
         self._sys_file = NorimDb._open(path.join(dir_path, "sys.ndb"))
         self._data_file = NorimDb._open(path.join(dir_path, "data.ndb"))
