@@ -5,5 +5,11 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+
+install: pip install https://github.com/meeron/pybinn/archive/v0.9.4-beta.zip
+
 # command to run tests
-script: py.test
+script: py.test -v
+
+branches:
+  only: master
