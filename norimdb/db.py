@@ -50,11 +50,14 @@ class Collection:
             raise DbError(ERR_DOC_TYPE)
         self._ensure_collection() 
 
-        dict_value['_id'] = DocId()
+        id_bytes = DocId().to_bytes()
+        dict_value['_id'] = id_bytes
+        data = pybinn.dumps(dict_value)
+        dict_value['_id'] = DocId.from_bytes(id_bytes)
 
         cursor = self._conn.cursor()
         query = "INSERT INTO {} VALUES(?, ?)".format(self._name)
-        cursor.execute(query, (dict_value['_id'], pybinn.dumps(dict_value)))
+        cursor.execute(query, (id_bytes, data))
         self._conn.commit()
         cursor.close()
 
@@ -63,12 +66,14 @@ class Collection:
         self._ensure_collection()
         query = "SELECT * FROM {} WHERE key=?".format(self._name)
         cursor = self._conn.cursor()
-        cursor.execute(query, (doc_id,))
+        cursor.execute(query, (doc_id.to_bytes(),))
         row = cursor.fetchone()
         cursor.close()
 
         if row:
-            return pybinn.loads(row[1])
+            obj = pybinn.loads(row[1])
+            obj['_id'] = DocId.from_bytes(obj['_id'])
+            return obj
         return None
 
     def _ensure_collection(self):
@@ -81,3 +86,4 @@ class Collection:
         cursor.execute(query)
         self._conn.commit()
         cursor.close()
+        
