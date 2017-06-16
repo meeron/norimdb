@@ -7,7 +7,7 @@ from os import path
 from norimdb import NorimDb, DbError
 
 
-class TestNorimDb:
+class _TestNorimDb:
     """NorimDb test"""
 
     def test_open_success(self):
