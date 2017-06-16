@@ -4,6 +4,7 @@ from os import urandom, getpid
 from time import time
 from struct import pack
 from io import BytesIO
+from binascii import hexlify, unhexlify
 
 
 class DocId:
@@ -34,7 +35,7 @@ class DocId:
     
     def to_str(self):
         """String representation of DocId instance"""
-        return self._buffer.hex()
+        return hexlify(self._buffer)
 
     def to_bytes(self):
         """Get bytes representation of DocId instance"""
@@ -56,5 +57,5 @@ class DocId:
     @staticmethod
     def from_str(str_buffer):
         """Create document id from string"""
-        return DocId.from_bytes(bytes(bytearray.fromhex(str_buffer)))
+        return DocId.from_bytes(unhexlify(str_buffer))
         
