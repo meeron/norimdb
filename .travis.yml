@@ -12,4 +12,6 @@ install: pip install https://github.com/meeron/pybinn/archive/v0.9.4-beta.zip
 script: py.test -v
 
 branches:
-  only: master
+  only: 
+  - master
+  - sqlite-based
