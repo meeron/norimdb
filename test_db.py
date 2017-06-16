@@ -14,8 +14,7 @@ class TestNorimDb:
         with TemporaryDirectory() as tempdir:
             with NorimDb(tempdir) as db:
                 pass
-            assert path.isfile(path.join(tempdir, 'sys.ndb'))
-            assert path.isfile(path.join(tempdir, 'data.ndb'))
+            assert path.isfile(path.join(tempdir, 'storage.ndb'))
 
     def test_open_fail(self):
         with pytest.raises(DbError) as err:

@@ -1,9 +1,10 @@
 """Module defines NorimDb class"""
 
-from os import path, SEEK_END
+from os import path
+import sqlite3
+import pybinn
 
 from .exceptions import *
-import pybinn
 from .docid import DocId
 
 
@@ -13,22 +14,8 @@ class NorimDb:
     def __init__(self, dir_path):
         if not path.isdir(dir_path):
             raise DbError(ERR_PATH, path=dir_path)
-
-        self._sys = {
-            '_sys': {'size': 0}
-        }
-
-        self._sys_file = NorimDb._open(path.join(dir_path, "sys.ndb"))
-        self._data_file = NorimDb._open(path.join(dir_path, "data.ndb"))
-
-        self._sys_file.seek(0, SEEK_END)
-        file_size = self._sys_file.tell()
-
-        if file_size > 0:
-            self._sys_file.seek(0)
-            self._sys = pybinn.load(self._sys_file)
-
-        self._opened = True
+        self._conn = sqlite3.connect(path.join(dir_path, "storage.ndb"))
+        self.opened = True
 
     def __enter__(self):
         return self
@@ -38,65 +25,59 @@ class NorimDb:
         return False
 
     def get_collection(self, name):
-        return Collection(name, self)
+        """Gets the collection"""
+        return Collection(name, self._conn, self)
 
     def close(self):
-        self._sys_file.close()
-        self._data_file.close()
-        self._opened = False
-
-    def _sync(self):
-        self._sys_file.seek(0)
-        pybinn.dump(self._sys, self._sys_file)
-        print(pybinn.dumps(self._sys))
-        print(self._sys)
-
-    @staticmethod
-    def _open(file_path):
-        if path.isfile(file_path):
-            return open(file_path, 'r+b')
-        return open(file_path, 'w+b')
+        """Close database"""
+        self._conn.close()
+        self.opened = False
 
 
 class Collection:
     """Collection class"""
 
-    def __init__(self, name: str, db: NorimDb):
+    def __init__(self, name: str, conn: sqlite3.Connection, db: NorimDb):
         if name[0] == '_':
             raise DbError(ERR_COL_NAME, name=name)
-        self._collection = db._sys.get(name, {
-            'sys': {'size': 0, 'count': 0},
-            'keys': {}
-        })
-        db._sys[name] = self._collection
         self._name = name
+        self._conn = conn
         self._db = db
 
     def add(self, dict_value: dict):
-        if not self._db._opened:
-            raise DbError(ERR_DB_CLOSED)
+        """Add value to collection"""
         if not isinstance(dict_value, dict):
             raise DbError(ERR_DOC_TYPE)
+        self._ensure_collection() 
 
-        if '_id' not in dict_value:
-            dict_value['_id'] = DocId()
-        if dict_value['_id'] in self._collection['keys']:
-            raise DbError(ERR_COL_KEY, key=dict_value['_id'], collection=self._name)
+        dict_value['_id'] = DocId()
 
-        self._collection['sys']['count'] += 1
-        self._collection['keys'][dict_value['_id']] = {
-            'offset': self._db._data_file.tell(),
-            'size': 0
-        }
-
-        pybinn.dump(dict_value, self._db._data_file)
-        self._db._sync()
+        cursor = self._conn.cursor()
+        query = "INSERT INTO {} VALUES(?, ?)".format(self._name)
+        cursor.execute(query, (dict_value['_id'], pybinn.dumps(dict_value)))
+        self._conn.commit()
+        cursor.close()
 
     def get(self, doc_id):
-        if not self._db._opened:
+        """Gets an item by id"""
+        self._ensure_collection()
+        query = "SELECT * FROM {} WHERE key=?".format(self._name)
+        cursor = self._conn.cursor()
+        cursor.execute(query, (doc_id,))
+        row = cursor.fetchone()
+        cursor.close()
+
+        if row:
+            return pybinn.loads(row[1])
+        return None
+
+    def _ensure_collection(self):
+        if not self._db.opened: 
             raise DbError(ERR_DB_CLOSED)
-        if doc_id not in self._collection['keys']:
-            return None
-        offset = self._collection['keys'][doc_id]['offset']
-        self._db._data_file.seek(offset)
-        return pybinn.load(self._db._data_file)
+        cursor = self._conn.cursor()
+        query = "CREATE TABLE IF NOT EXISTS {name}(key BLOB PRIMARY KEY, value BLOB)".format(
+            name=self._name
+        )
+        cursor.execute(query)
+        self._conn.commit()
+        cursor.close()
