@@ -83,6 +83,35 @@ class Collection:
         cursor = self._conn.cursor()
         cursor.execute(query, (docid.to_bytes(),))
         cursor.close()
+        # TODO: return number of affected rows
+
+    def update(self, docid, **kwargs):
+        """Update fields on an entry"""
+        self._ensure_collection()
+        obj = self.get(docid)
+        if obj:
+            for key in kwargs:
+                if key == '_id':
+                    continue
+                obj[key] = kwargs[key]
+            return self.update_all(docid, obj)
+        return 0
+
+    def update_all(self, docid, obj):
+        """Update whole entry"""
+        self._ensure_collection()
+        query = "UPDATE {} SET value=? WHERE key=?".format(self._name)
+        cursor = self._conn.cursor()
+        obj['_id'] = obj['_id'].to_bytes()
+        cursor.execute(query, (
+            pybinn.dumps(obj),
+            obj['_id']
+        ))
+        count = cursor.rowcount
+        self._conn.commit()
+        cursor.close()
+        obj['_id'] = DocId.from_bytes(obj['_id'])
+        return count
 
     def _ensure_collection(self):
         if not self._db.opened: 

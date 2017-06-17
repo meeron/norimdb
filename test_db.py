@@ -53,3 +53,16 @@ class TestNorimDb:
                 collection.remove(obj['_id'])
                 objdb = collection.get(obj['_id'])
                 assert objdb is None
+
+    def test_update_single_fields(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                obj = {'name':"test"}
+                new_name = "test123"
+                collection.add(obj)
+                count = collection.update(obj['_id'], name=new_name)
+                objdb = collection.get(obj['_id'])
+                assert count > 0
+                assert objdb['name'] == new_name
+        
