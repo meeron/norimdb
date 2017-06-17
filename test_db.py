@@ -43,3 +43,13 @@ class TestNorimDb:
                 collection = db.get_collection("test")
             with pytest.raises(DbError) as err:
                 collection.add({})
+
+    def test_remove(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                obj = {'name':"test"}
+                collection.add(obj)
+                collection.remove(obj['_id'])
+                objdb = collection.get(obj['_id'])
+                assert objdb is None

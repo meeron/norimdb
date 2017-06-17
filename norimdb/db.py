@@ -48,7 +48,7 @@ class Collection:
         """Add value to collection"""
         if not isinstance(dict_value, dict):
             raise DbError(ERR_DOC_TYPE)
-        self._ensure_collection() 
+        self._ensure_collection()
 
         id_bytes = DocId().to_bytes()
         dict_value['_id'] = id_bytes
@@ -75,6 +75,14 @@ class Collection:
             obj['_id'] = DocId.from_bytes(obj['_id'])
             return obj
         return None
+
+    def remove(self, docid):
+        """Remove entry by id"""
+        self._ensure_collection()
+        query = "DELETE FROM {} WHERE key=?".format(self._name)
+        cursor = self._conn.cursor()
+        cursor.execute(query, (docid.to_bytes(),))
+        cursor.close()
 
     def _ensure_collection(self):
         if not self._db.opened: 
