@@ -66,3 +66,16 @@ class TestNorimDb:
                 objdb = collection.get(obj['_id'])
                 assert count > 0
                 assert objdb['name'] == new_name
+
+    def test_get_simple_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name':"test1"})
+                collection.add({'age': 66, 'name':"test2"})
+                collection.add({'age': 123, 'name':"test3"})
+                result = collection.find({
+                    'age': 66,
+                    'name': "test2"
+                })
+                assert len(result) == 1

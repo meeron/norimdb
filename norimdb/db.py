@@ -44,6 +44,7 @@ class Collection:
         self._conn = conn
         self._db = db
 
+    # TODO: add batch
     def add(self, dict_value: dict):
         """Add value to collection"""
         if not isinstance(dict_value, dict):
@@ -113,6 +114,22 @@ class Collection:
         cursor.close()
         obj['_id'] = DocId.from_bytes(obj['_id'])
         return count
+
+    def find(self, query_dict):
+        """Find entries by query"""
+        self._ensure_collection()
+        query = "SELECT * FROM {}".format(self._name)
+        cursor = self._conn.cursor()
+        result = []
+        for row in cursor.execute(query):
+            obj = pybinn.loads(row[1])
+            query_result = 0
+            for field in query_dict:
+                if field in obj and obj[field] == query_dict[field]:
+                    query_result += 1
+            if query_result == len(query_dict):
+                result.append(obj)
+        return result
 
     def _ensure_collection(self):
         if not self._db.opened: 
