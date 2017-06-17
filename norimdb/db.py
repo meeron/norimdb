@@ -82,8 +82,9 @@ class Collection:
         query = "DELETE FROM {} WHERE key=?".format(self._name)
         cursor = self._conn.cursor()
         cursor.execute(query, (docid.to_bytes(),))
+        count = cursor.rowcount
         cursor.close()
-        # TODO: return number of affected rows
+        return count
 
     def update(self, docid, **kwargs):
         """Update fields on an entry"""

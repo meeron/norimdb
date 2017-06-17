@@ -50,8 +50,9 @@ class TestNorimDb:
                 collection = db.get_collection("test")
                 obj = {'name':"test"}
                 collection.add(obj)
-                collection.remove(obj['_id'])
+                count = collection.remove(obj['_id'])
                 objdb = collection.get(obj['_id'])
+                assert count > 0
                 assert objdb is None
 
     def test_update_single_fields(self):
@@ -65,4 +66,3 @@ class TestNorimDb:
                 objdb = collection.get(obj['_id'])
                 assert count > 0
                 assert objdb['name'] == new_name
-        
