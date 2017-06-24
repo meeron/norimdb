@@ -120,16 +120,37 @@ class Collection:
         self._ensure_collection()
         query = "SELECT * FROM {}".format(self._name)
         cursor = self._conn.cursor()
+        
         result = []
         for row in cursor.execute(query):
             obj = pybinn.loads(row[1])
-            query_result = 0
-            for field in query_dict:
-                if field in obj and obj[field] == query_dict[field]:
-                    query_result += 1
+            query_result = Collection._check_obj(query_dict, obj)
             if query_result == len(query_dict):
                 result.append(obj)
         return result
+    
+    @staticmethod
+    def _check_obj(query_dict, obj):
+        query_result = 0
+        for field in query_dict:
+            if field == '$or' and isinstance(query_dict[field], tuple):
+                or_query = query_dict[field]
+                or_result = 0
+                for sub_query in or_query:
+                    or_result += Collection._check_obj(sub_query, obj)
+                if or_result > 0:
+                    query_result += 1
+            if field in obj and isinstance(query_dict[field], dict):
+                inner = query_dict[field]
+                if '$lt' in inner and obj[field] < inner['$lt']:
+                    query_result += 1 / len(inner)
+                if '$gt' in inner and obj[field] > inner['$gt']:
+                    query_result += 1 / len(inner)
+                if '$in' in inner and isinstance(inner['$in'], tuple) and obj[field] in inner['$in']:
+                    query_result += 1
+            if field in obj and obj[field] == query_dict[field]:
+                query_result += 1
+        return query_result
 
     def _ensure_collection(self):
         if not self._db.opened: 

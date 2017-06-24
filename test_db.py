@@ -79,3 +79,40 @@ class TestNorimDb:
                     'name': "test2"
                 })
                 assert len(result) == 1
+
+    def test_get_compare_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name':"test1"})
+                collection.add({'age': 70, 'name':"test2"})
+                collection.add({'age': 123, 'name':"test3"})
+                result = collection.find({
+                    'age': {'$lt':100, '$gt': 67}
+                })
+                assert len(result) == 1
+                assert result[0]['name'] == "test2"
+
+    def test_get_or_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name':"test1"})
+                collection.add({'age': 70, 'name':"test2"})
+                collection.add({'age': 123, 'name':"test3"})
+                result = collection.find({
+                    '$or': ({'age':66}, {'name':"test2"})
+                })
+                assert len(result) == 2
+
+    def test_get_in_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name':"test1"})
+                collection.add({'age': 70, 'name':"test2"})
+                collection.add({'age': 123, 'name':"test3"})
+                result = collection.find({
+                    'age': {'$in':(66,123)}
+                })
+                assert len(result) == 2
