@@ -113,6 +113,31 @@ class TestNorimDb:
                 collection.add({'age': 70, 'name':"test2"})
                 collection.add({'age': 123, 'name':"test3"})
                 result = collection.find({
-                    'age': {'$in':(66,123)}
+                    'age': {'$in':(66, 123)}
                 })
                 assert len(result) == 2
+
+    def test_get_sort_asc_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 25, 'name':"test1"})
+                collection.add({'age': 15, 'name':"test2"})
+                collection.add({'age': 17, 'name':"test3"})
+                result = collection.find({}, 'age')
+                assert result[0]['name'] == "test2"
+                assert result[1]['name'] == "test3"
+                assert result[2]['name'] == "test1"
+
+    def test_get_sort_desc_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 17, 'name':"test1"})
+                collection.add({'age': 25, 'name':"test2"})
+                collection.add({'age': 15, 'name':"test3"})
+                result = collection.find({}, 'age desc')
+                assert result[0]['name'] == "test2"
+                assert result[1]['name'] == "test1"
+                assert result[2]['name'] == "test3"
+

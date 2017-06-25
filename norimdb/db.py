@@ -115,20 +115,30 @@ class Collection:
         obj['_id'] = DocId.from_bytes(obj['_id'])
         return count
 
-    def find(self, query_dict):
+    def find(self, query_dict, sort=None):
         """Find entries by query"""
         self._ensure_collection()
         query = "SELECT * FROM {}".format(self._name)
         cursor = self._conn.cursor()
-        
+
         result = []
         for row in cursor.execute(query):
             obj = pybinn.loads(row[1])
             query_result = Collection._check_obj(query_dict, obj)
             if query_result == len(query_dict):
                 result.append(obj)
+
+        if sort is not None and isinstance(sort, str):
+            sort_list = sort.split()
+            sort_list_len = len(sort_list)
+            if sort_list_len > 0:
+                sort_field = sort_list[0]
+                result.sort(key=lambda o: o[sort_field] if sort_field in o else b'\xff')
+            if sort_list_len > 1 and sort_list[1] == 'desc':
+                result.reverse()
+
         return result
-    
+
     @staticmethod
     def _check_obj(query_dict, obj):
         query_result = 0
