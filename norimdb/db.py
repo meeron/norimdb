@@ -93,10 +93,10 @@ class Collection:
                 if key == '_id':
                     continue
                 obj[key] = kwargs[key]
-            return self.update_all(docid, obj)
+            return self.update_whole(obj)
         return 0
 
-    def update_all(self, docid, obj):
+    def update_whole(self, obj):
         """Update whole entry"""
         self._ensure_collection()
         query = "UPDATE {} SET value=? WHERE key=?".format(self._name)

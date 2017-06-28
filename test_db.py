@@ -55,6 +55,19 @@ class TestNorimDb:
                 assert count > 0
                 assert objdb is None
 
+    def test_update_whole_document(self):
+         with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                obj = {'name':"test"}
+                collection.add(obj)
+                obj_new = {'_id': obj['_id'], 'name':"test_new", 'age':66}
+                count = collection.update_whole(obj_new)
+                objdb = collection.get(obj['_id'])
+                assert count > 0
+                assert objdb['name'] == obj_new['name']
+                assert 'age' in objdb
+
     def test_update_single_fields(self):
         with TemporaryDirectory() as tempdir:
             with NorimDb(tempdir) as db:
