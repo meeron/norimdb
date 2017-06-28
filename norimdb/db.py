@@ -93,18 +93,18 @@ class Collection:
                 if key == '_id':
                     continue
                 obj[key] = kwargs[key]
-            return self.update_whole(obj)
+            return self.set(docid, obj)
         return 0
 
-    def update_whole(self, obj):
+    def set(self, docid, obj):
         """Update whole entry"""
         self._ensure_collection()
+        obj['_id'] = docid.to_bytes()
         query = "UPDATE {} SET value=? WHERE key=?".format(self._name)
         cursor = self._conn.cursor()
-        obj['_id'] = obj['_id'].to_bytes()
         cursor.execute(query, (
             pybinn.dumps(obj),
-            obj['_id']
+            docid.to_bytes()
         ))
         count = cursor.rowcount
         self._conn.commit()

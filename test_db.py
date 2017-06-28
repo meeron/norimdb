@@ -61,8 +61,8 @@ class TestNorimDb:
                 collection = db.get_collection("test")
                 obj = {'name':"test"}
                 collection.add(obj)
-                obj_new = {'_id': obj['_id'], 'name':"test_new", 'age':66}
-                count = collection.update_whole(obj_new)
+                obj_new = {'name':"test_new", 'age':66}
+                count = collection.set(obj['_id'], obj_new)
                 objdb = collection.get(obj['_id'])
                 assert count > 0
                 assert objdb['name'] == obj_new['name']
@@ -79,6 +79,18 @@ class TestNorimDb:
                 objdb = collection.get(obj['_id'])
                 assert count > 0
                 assert objdb['name'] == new_name
+
+    def test_set_document(self):
+         with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                obj = {'name':"test"}
+                obj_new = {'name':"test_new", 'age':66}
+                collection.add(obj)
+                collection.set(obj['_id'], obj_new)
+                objdb = collection.get(obj['_id'])
+                assert objdb['name'] == obj_new['name']
+                assert 'age' in objdb
 
     def test_get_simple_query(self):
         with TemporaryDirectory() as tempdir:
