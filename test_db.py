@@ -141,3 +141,17 @@ class TestNorimDb:
                 assert result[1]['name'] == "test1"
                 assert result[2]['name'] == "test3"
 
+    def test_add_batch(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                data_batch = [
+                    {'age': 66, 'name':"test"},
+                    {'age': 66, 'name':"test"},
+                    {'age': 123, 'name':"test"}
+                ]
+                collection.add_batch(data_batch)
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                result = collection.find({'name':"test"})
+                assert len(result) == 3

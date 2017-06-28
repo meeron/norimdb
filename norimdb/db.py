@@ -44,23 +44,20 @@ class Collection:
         self._conn = conn
         self._db = db
 
-    # TODO: add batch
     def add(self, dict_value: dict):
         """Add value to collection"""
         if not isinstance(dict_value, dict):
             raise DbError(ERR_DOC_TYPE)
         self._ensure_collection()
 
-        id_bytes = DocId().to_bytes()
-        dict_value['_id'] = id_bytes
-        data = pybinn.dumps(dict_value)
-        dict_value['_id'] = DocId.from_bytes(id_bytes)
+        Collection._add(dict_value, self._conn, self._name, True)
 
-        cursor = self._conn.cursor()
-        query = "INSERT INTO {} VALUES(?, ?)".format(self._name)
-        cursor.execute(query, (id_bytes, data))
+    def add_batch(self, values_list):
+        """Add values in batch"""
+        self._ensure_collection()
+        for dict_value in values_list:
+            Collection._add(dict_value, self._conn, self._name, False)
         self._conn.commit()
-        cursor.close()
 
     def get(self, doc_id):
         """Gets an item by id"""
@@ -163,7 +160,7 @@ class Collection:
         return query_result
 
     def _ensure_collection(self):
-        if not self._db.opened: 
+        if not self._db.opened:
             raise DbError(ERR_DB_CLOSED)
         cursor = self._conn.cursor()
         query = "CREATE TABLE IF NOT EXISTS {name}(key BLOB PRIMARY KEY, value BLOB)".format(
@@ -172,4 +169,19 @@ class Collection:
         cursor.execute(query)
         self._conn.commit()
         cursor.close()
+
+    @staticmethod
+    def _add(dict_value, conn, collection_name, commit=True):
+        id_bytes = DocId().to_bytes()
+        dict_value['_id'] = id_bytes
+        data = pybinn.dumps(dict_value)
+        dict_value['_id'] = DocId.from_bytes(id_bytes)
+
+        cursor = conn.cursor()
+        query = "INSERT INTO {} VALUES(?, ?)".format(collection_name)
+        cursor.execute(query, (id_bytes, data))
+        cursor.close()
+
+        if commit:
+            conn.commit()
         
