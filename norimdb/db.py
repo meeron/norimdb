@@ -70,7 +70,7 @@ class Collection:
 
         if row:
             obj = pybinn.loads(row[1])
-            obj['_id'] = DocId.from_bytes(obj['_id'])
+            obj['_id'] = DocId(obj['_id'])
             return obj
         return None
 
@@ -109,7 +109,7 @@ class Collection:
         count = cursor.rowcount
         self._conn.commit()
         cursor.close()
-        obj['_id'] = DocId.from_bytes(obj['_id'])
+        obj['_id'] = DocId(obj['_id'])
         return count
 
     def find(self, query_dict, sort=None):
@@ -175,7 +175,7 @@ class Collection:
         id_bytes = DocId().to_bytes()
         dict_value['_id'] = id_bytes
         data = pybinn.dumps(dict_value)
-        dict_value['_id'] = DocId.from_bytes(id_bytes)
+        dict_value['_id'] = DocId(id_bytes)
 
         cursor = conn.cursor()
         query = "INSERT INTO {} VALUES(?, ?)".format(collection_name)
@@ -184,4 +184,3 @@ class Collection:
 
         if commit:
             conn.commit()
-        
