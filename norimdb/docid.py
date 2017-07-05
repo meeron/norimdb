@@ -49,7 +49,7 @@ class DocId:
 
     def _from_str(self, str_buffer):
         try:
-            self._from_bytes(unhexlify(str_buffer))
+            self._from_bytes(unhexlify(str_buffer.encode('utf8')))
         except Error as binascii_err:
             raise OverflowError(binascii_err)
         except OverflowError as overflow_err:
