@@ -28,6 +28,13 @@ class NorimDb:
         """Gets the collection"""
         return Collection(name, self._conn, self)
 
+    def remove_collection(self, name):
+        """Remove collection"""
+        query = "DROP TABLE IF EXISTS {}".format(name)
+        cursor = self._conn.cursor()
+        cursor.execute(query)
+        self._conn.commit()
+
     def close(self):
         """Close database"""
         self._conn.close()

@@ -36,6 +36,14 @@ class TestNorimDb:
                 assert doc['name'] == doc_db['name']
                 assert doc['_id'] == doc_db['_id']
 
+    def test_remove_collection(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'name': 'test'})
+            with NorimDb(tempdir) as db:
+                db.remove_collection('test')
+
     def test_add_value_to_closed_db(self):
         with TemporaryDirectory() as tempdir:
             collection = None
