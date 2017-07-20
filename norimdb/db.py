@@ -81,6 +81,7 @@ class Collection:
         cursor = self._conn.cursor()
         cursor.execute(query, (docid.to_bytes(),))
         count = cursor.rowcount
+        self._conn.commit()
         cursor.close()
         return count
 
