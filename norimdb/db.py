@@ -131,6 +131,7 @@ class Collection:
             obj = pybinn.loads(row[1])
             query_result = Collection._check_obj(query_dict, obj)
             if query_result == len(query_dict):
+                obj['_id'] = DocId(obj['_id'])
                 result.append(obj)
 
         if sort is not None and isinstance(sort, str):

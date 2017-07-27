@@ -4,7 +4,7 @@ import pytest
 from tempfile import TemporaryDirectory
 from os import path
 
-from norimdb import NorimDb, DbError
+from norimdb import NorimDb, DbError, DocId
 
 
 class TestNorimDb:
@@ -35,6 +35,7 @@ class TestNorimDb:
                 doc_db = collection.get(doc['_id'])
                 assert doc['name'] == doc_db['name']
                 assert doc['_id'] == doc_db['_id']
+                assert isinstance(doc_db['_id'], DocId)
 
     def test_remove_collection(self):
         with TemporaryDirectory() as tempdir:
@@ -120,6 +121,7 @@ class TestNorimDb:
                     'name': "test2"
                 })
                 assert len(result) == 1
+                assert isinstance(result[0]['_id'], DocId)
 
     def test_get_compare_query(self):
         with TemporaryDirectory() as tempdir:
