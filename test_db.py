@@ -223,3 +223,39 @@ class TestNorimDb:
                 })
                 assert len(result) == 1
                 assert result[0]['name'] == "test3"
+
+    def test_less_equal_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name': "test1"})
+                collection.add({'age': 70, 'name': "test2"})
+                collection.add({'age': 123, 'name': "test3"})
+                result = collection.find({
+                    'age': {'$lte': 70}
+                })
+                assert len(result) == 2
+
+    def test_greater_equal_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name': "test1"})
+                collection.add({'age': 70, 'name': "test2"})
+                collection.add({'age': 123, 'name': "test3"})
+                result = collection.find({
+                    'age': {'$gte': 70}
+                })
+                assert len(result) == 2
+
+    def test_not_in_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name': "test1"})
+                collection.add({'age': 70, 'name': "test2"})
+                collection.add({'age': 123, 'name': "test3"})
+                result = collection.find({
+                    'age': {'$nin': (66, 123)}
+                })
+                assert len(result) == 1
