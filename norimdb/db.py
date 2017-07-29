@@ -163,7 +163,9 @@ class Collection:
                 if '$gt' in inner and obj[field] > inner['$gt']:
                     query_result += 1 / len(inner)
                 if '$in' in inner and isinstance(inner['$in'], tuple) and obj[field] in inner['$in']:
-                    query_result += 1
+                    query_result += 1 / len(inner)
+                if '$ne' in inner and obj[field] != inner['$ne']:
+                    query_result += 1 / len(inner)
             if field in obj and obj[field] == query_dict[field]:
                 query_result += 1
         return query_result

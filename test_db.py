@@ -131,7 +131,7 @@ class TestNorimDb:
                 collection.add({'age': 70, 'name': "test2"})
                 collection.add({'age': 123, 'name': "test3"})
                 result = collection.find({
-                    'age': {'$lt':100, '$gt': 67}
+                    'age': {'$lt': 100, '$gt': 67}
                 })
                 assert len(result) == 1
                 assert result[0]['name'] == "test2"
@@ -144,7 +144,7 @@ class TestNorimDb:
                 collection.add({'age': 70, 'name': "test2"})
                 collection.add({'age': 123, 'name': "test3"})
                 result = collection.find({
-                    '$or': ({'age':66}, {'name': "test2"})
+                    '$or': ({'age': 66}, {'name': "test2"})
                 })
                 assert len(result) == 2
 
@@ -156,7 +156,7 @@ class TestNorimDb:
                 collection.add({'age': 70, 'name': "test2"})
                 collection.add({'age': 123, 'name': "test3"})
                 result = collection.find({
-                    'age': {'$in':(66, 123)}
+                    'age': {'$in': (66, 123)}
                 })
                 assert len(result) == 2
 
@@ -198,3 +198,28 @@ class TestNorimDb:
                 collection = db.get_collection("test")
                 result = collection.find({'name': "test"})
                 assert len(result) == 3
+
+    def test_not_equal_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name': "test1"})
+                collection.add({'age': 70, 'name': "test2"})
+                collection.add({'age': 123, 'name': "test3"})
+                result = collection.find({
+                    'age': {'$ne': 70}
+                })
+                assert len(result) == 2
+
+    def test_not_equal_with_none_query(self):
+        with TemporaryDirectory() as tempdir:
+            with NorimDb(tempdir) as db:
+                collection = db.get_collection("test")
+                collection.add({'age': 66, 'name': None})
+                collection.add({'age': 70, 'name': None})
+                collection.add({'age': 123, 'name': "test3"})
+                result = collection.find({
+                    'name': {'$ne': None}
+                })
+                assert len(result) == 1
+                assert result[0]['name'] == "test3"
